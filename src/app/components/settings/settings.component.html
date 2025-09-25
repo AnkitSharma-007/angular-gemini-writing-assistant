@@ -1,0 +1,85 @@
+<!-- Settings Modal -->
+<div class="modal-backdrop">
+  <div class="settings-modal">
+    <div class="modal-header">
+      <h3>Settings</h3>
+      <button
+        (click)="closeModal()"
+        class="modal-close-btn"
+        title="Close Settings"
+        type="button"
+      >
+        &times;
+      </button>
+    </div>
+
+    <div class="modal-content">
+      <div class="setting-group">
+        <label for="apiKey">Gemini API Key:</label>
+        <input
+          id="apiKey"
+          type="password"
+          [(ngModel)]="apiKeyValue"
+          placeholder="Enter your Gemini API key..."
+          class="api-key-input"
+          (keydown.enter)="saveApiKey(apiKeyValue)"
+        />
+        <div class="button-group">
+          <button
+            (click)="saveApiKey(apiKeyValue)"
+            class="save-btn"
+            type="button"
+            [disabled]="!apiKeyValue || !apiKeyValue.trim()"
+            title="Save API Key"
+          >
+            Save
+          </button>
+          <button
+            (click)="clearApiKey()"
+            class="clear-btn"
+            type="button"
+            title="Clear API Key"
+          >
+            Clear
+          </button>
+        </div>
+        <p class="setting-help">
+          Get your free API key from
+          <a href="https://aistudio.google.com/app/apikey" target="_blank">
+            Google AI Studio
+          </a>
+        </p>
+      </div>
+
+      <!-- Token Usage Display -->
+      @if (tokenUsage().requestCount > 0) {
+      <div class="setting-group">
+        <label>API Usage (Current Session):</label>
+        <div class="usage-stats">
+          <div class="usage-item">
+            <span class="usage-label">Requests</span>
+            <span class="usage-value">{{ tokenUsage().requestCount }}</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">Input Tokens</span>
+            <span class="usage-value">{{ tokenUsage().inputTokens }}</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">Output Tokens</span>
+            <span class="usage-value">{{ tokenUsage().outputTokens }}</span>
+          </div>
+          <div class="usage-item">
+            <span class="usage-label">Total Tokens</span>
+            <span class="usage-value highlight">{{
+              tokenUsage().totalTokens
+            }}</span>
+          </div>
+        </div>
+        <button (click)="resetUsageStats()" class="reset-btn" type="button">
+          Reset Statistics
+        </button>
+      </div>
+      }
+    </div>
+  </div>
+</div>

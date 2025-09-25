@@ -1,0 +1,98 @@
+<div class="editor-layout">
+  <!-- Main Editor Area -->
+  <div class="main-content">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <h2>AI Grammar Checker</h2>
+        <div class="document-stats">
+          <span class="stat">{{ wordCount() }} words</span>
+          <span class="stat">{{ characterCount() }} chars</span>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <button
+          (click)="toggleAutoSuggestions()"
+          [class.active]="settings().autoSuggestions"
+          class="toolbar-btn"
+          title="Toggle Grammar Check"
+        >
+          📝 Grammar
+        </button>
+
+        <button
+          (click)="toggleSettings()"
+          [class.active]="showSettings()"
+          class="toolbar-btn"
+          title="Settings"
+        >
+          ⚙️
+        </button>
+      </div>
+    </div>
+
+    <!-- Subtle API key notice -->
+    @if (showApiKeyNotice()) {
+    <div class="inline-api-key-notice" role="status" aria-live="polite">
+      <span class="notice-icon">⚠️</span>
+      <span class="notice-text">{{
+        apiKeyNoticeMessage() ||
+          "Your API key seems invalid. Update it in Settings."
+      }}</span>
+      <button class="notice-action" type="button" (click)="toggleSettings()">
+        Open Settings
+      </button>
+      <button
+        class="notice-dismiss"
+        type="button"
+        (click)="dismissApiKeyNotice()"
+        title="Dismiss"
+      >
+        ×
+      </button>
+    </div>
+    }
+
+    <!-- Settings Modal -->
+    @if (showSettings()) {
+    <app-settings
+      [settings]="settings()"
+      [tokenUsage]="tokenUsage()"
+      (settingsChange)="onSettingsChange($event)"
+      (close)="closeSettings()"
+    />
+    }
+
+    <!-- Editor Container -->
+    <div class="editor-container">
+      <div class="editor-main">
+        <textarea
+          #textEditor
+          [(ngModel)]="currentText"
+          placeholder="Start writing your masterpiece..."
+          class="main-textarea"
+        ></textarea>
+        @if (isProcessing()) {
+        <div
+          class="inline-processing-indicator"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <div class="loading-spinner"></div>
+          <span>Analyzing…</span>
+        </div>
+        }
+      </div>
+
+      <!-- Suggestions Panel -->
+      @if (settings().autoSuggestions) {
+      <app-suggestions-panel
+        [suggestions]="filteredSuggestions()"
+        (applySuggestion)="applySuggestion($event)"
+        (dismissSuggestion)="dismissSuggestion($event)"
+      />
+      }
+    </div>
+  </div>
+</div>

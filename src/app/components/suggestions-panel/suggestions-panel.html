@@ -1,0 +1,53 @@
+<!-- Suggestions Panel -->
+<div class="suggestions-panel">
+  <div class="suggestions-header">
+    <h4>
+      Grammar Suggestions @if (suggestions().length > 0) { ({{
+        suggestions().length
+      }}) }
+    </h4>
+  </div>
+
+  @if (suggestions().length > 0) {
+  <div class="suggestions-list">
+    @for (suggestion of suggestions(); track suggestion.id) {
+    <div class="suggestion-card">
+      @if (suggestion.originalText) {
+      <div class="original">Original: {{ suggestion.originalText }}</div>
+      }
+
+      <div class="suggested">Suggestion: {{ suggestion.text }}</div>
+
+      <div class="suggestion-actions">
+        @if (suggestion.originalText) {
+        <button
+          (click)="applySuggestion.emit(suggestion)"
+          class="apply-btn"
+          type="button"
+        >
+          Apply
+        </button>
+        }
+        <button
+          (click)="dismissSuggestion.emit(suggestion)"
+          class="dismiss-btn"
+          type="button"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="suggestions-placeholder">
+    <div class="placeholder-icon">✨</div>
+    <div class="placeholder-content">
+      <h5>No suggestions yet</h5>
+      <p>
+        Start typing, and we’ll show Gemini-powered grammar suggestions here.
+      </p>
+    </div>
+  </div>
+  }
+</div>

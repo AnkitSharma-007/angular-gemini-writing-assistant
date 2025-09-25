@@ -1,0 +1,223 @@
+@mixin button-base {
+  border: none;
+  padding: var(--spacing-2) var(--spacing-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline-offset: 2px;
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-4);
+  z-index: var(--z-modal-backdrop);
+  backdrop-filter: blur(4px);
+}
+
+.settings-modal {
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-5);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  
+  h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: var(--font-size-xl);
+  cursor: pointer;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--color-surface-secondary);
+    color: var(--color-text-primary);
+  }
+  
+  &:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.modal-content {
+  padding: var(--spacing-5);
+  overflow-y: auto;
+}
+
+.setting-group {
+  margin-bottom: var(--spacing-6);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  label {
+    display: block;
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--spacing-2);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+  }
+}
+
+.api-key-input {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+  }
+}
+
+.setting-help {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: var(--spacing-2) 0 0 0;
+  line-height: 1.4;
+  
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    
+    &:hover {
+      text-decoration: underline;
+    }
+    
+    &:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+
+
+.save-btn {
+  @include button-base;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  
+  &:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+  
+  &:focus {
+    outline: 2px solid var(--color-primary);
+  }
+}
+
+.clear-btn, .reset-btn {
+  @include button-base;
+  background: var(--color-error);
+  color: var(--color-text-inverse);
+  
+  &:hover {
+    background: #dc2626;
+  }
+  
+  &:focus {
+    outline: 2px solid var(--color-error);
+  }
+}
+
+.usage-stats {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-4);
+  margin-bottom: var(--spacing-3);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-3);
+}
+
+.usage-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  
+  .usage-label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .usage-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    
+    &.highlight {
+      color: var(--color-primary);
+    }
+  }
+}
