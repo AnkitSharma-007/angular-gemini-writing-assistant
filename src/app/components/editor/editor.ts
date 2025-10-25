@@ -7,14 +7,14 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AISuggestionService } from '../services/ai-suggestion';
-import { SettingsService } from '../services/settings.service';
+import { AISuggestionService } from '../../services/ai-suggestion';
+import { SettingsService } from '../../services/settings';
 import { catchError, of, finalize, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AISuggestion, UserSettings } from '../models/helper';
-import { SUGGESTION_IDS } from '../shared/constants';
-import { SettingsComponent } from '../components/settings/settings.component';
-import { SuggestionsPanelComponent } from '../components/suggestions-panel/suggestions-panel';
+import { AISuggestion, UserSettings } from '../../models/helper';
+import { SUGGESTION_IDS } from '../../shared/constants';
+import { SettingsComponent } from '../settings/settings.component';
+import { SuggestionsPanelComponent } from '../suggestions-panel/suggestions-panel';
 
 @Component({
   selector: 'app-editor',
@@ -87,9 +87,8 @@ export class EditorComponent {
         return;
       }
 
-      let sub: Subscription | undefined;
       this.debounceHandle = setTimeout(() => {
-        sub = this.requestSuggestions(text);
+        this.requestSuggestions(text);
       }, 500);
 
       onCleanup(() => {
@@ -97,7 +96,6 @@ export class EditorComponent {
           clearTimeout(this.debounceHandle);
           this.debounceHandle = undefined;
         }
-        sub?.unsubscribe();
       });
     });
   }
@@ -135,7 +133,6 @@ export class EditorComponent {
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((suggestions) => {
-        // Hide API-key sentinel suggestions; rely on aiStatus notice instead
         const filtered = suggestions.filter(
           (s) =>
             s.id !== SUGGESTION_IDS.NO_API_KEY &&
@@ -164,10 +161,6 @@ export class EditorComponent {
     this.suggestions.update((suggestions) =>
       suggestions.filter((s) => s.id !== suggestion.id)
     );
-  }
-
-  clearSuggestions() {
-    this.suggestions.set([]);
   }
 
   onSettingsChange(updates: Partial<UserSettings>) {

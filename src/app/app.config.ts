@@ -13,7 +13,6 @@ import {
   MODEL_ID,
   TIMEOUT_MS,
 } from './shared/config.tokens';
-import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [

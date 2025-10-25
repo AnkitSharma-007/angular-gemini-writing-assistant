@@ -119,12 +119,7 @@ Text to analyze:
 ${text}
 ---
 
-Return ONLY valid JSON (no code fences, no prose, no markdown). Use exactly this shape:
-{
-  "suggestions": [
-    { "text": "corrected_text", "originalText": "original_incorrect_text" }
-  ]
-}
+Return ONLY valid JSON (no code fences, no prose, no markdown).
 
 Guidelines:
 - Focus ONLY on grammar, spelling, and punctuation errors
@@ -142,6 +137,7 @@ Guidelines:
         response.usageMetadata.totalTokenCount ?? 0
       );
     }
+
     if (!response.candidates?.length) return [];
     const rawText = response.candidates[0]?.content?.parts?.[0]?.text;
     if (!rawText) return [];
@@ -201,13 +197,12 @@ Guidelines:
     outputTokens: number,
     totalTokens: number
   ) {
-    const current = this.tokenUsage();
-    this.tokenUsage.set({
-      inputTokens: current.inputTokens + inputTokens,
-      outputTokens: current.outputTokens + outputTokens,
-      totalTokens: current.totalTokens + totalTokens,
-      requestCount: current.requestCount + 1,
-    });
+    this.tokenUsage.update((usage) => ({
+      inputTokens: usage.inputTokens + inputTokens,
+      outputTokens: usage.outputTokens + outputTokens,
+      totalTokens: usage.totalTokens + totalTokens,
+      requestCount: usage.requestCount + 1,
+    }));
   }
 
   resetTokenUsage() {
@@ -228,8 +223,6 @@ Guidelines:
       temperature: 0.3,
       topK: 40,
       topP: 0.95,
-      // Note: we keep a default here; request will override with injected value
-      maxOutputTokens: 512,
       thinkingConfig: { thinkingBudget: 0 },
     } as const;
   }
@@ -237,6 +230,7 @@ Guidelines:
   private mapItemsToSuggestions(items: unknown[]): AISuggestion[] {
     const maxItems = 5;
     const picked = [] as AISuggestion[];
+
     for (let i = 0; i < items.length && picked.length < maxItems; i++) {
       const item = items[i];
       if (!this.isParsedSuggestion(item)) continue;

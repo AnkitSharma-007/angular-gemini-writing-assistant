@@ -11,7 +11,6 @@ export interface AISuggestion {
   originalText?: string;
 }
 
-// Minimal JSON Schema type to describe model response shapes without using `any`
 export type JSONSchema = {
   type: 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null';
   properties?: Record<string, JSONSchema>;
