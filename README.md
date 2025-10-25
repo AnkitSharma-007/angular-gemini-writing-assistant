@@ -18,18 +18,7 @@ A lightweight Angular app that uses Google Gemini (2.5 Flash) to provide real‑
    npm install
    ```
 
-2. (Optional) Set a default API key
-
-   Edit `src/environments/environment.development.ts`:
-
-   ```ts
-   export const environment = {
-     production: false,
-     GEMINI_API_KEY: "your-api-key-here",
-   };
-   ```
-
-3. Run the app
+2. Run the app
 
    ```bash
    npm start
@@ -37,7 +26,7 @@ A lightweight Angular app that uses Google Gemini (2.5 Flash) to provide real‑
 
    Open http://localhost:4200
 
-4. Configure AI
+3. Configure AI
    - Click ⚙️ Settings
    - Enter your Google Gemini API key (stored locally)
    - Toggle Auto‑suggestions as needed
@@ -51,7 +40,7 @@ A lightweight Angular app that uses Google Gemini (2.5 Flash) to provide real‑
 
 ## Configuration
 
-- API key: via Settings (localStorage) or `environment.*.ts`
+- API key: via Settings (localStorage)
 - Model/HTTP/timeouts: provided via DI tokens in `app.config.ts`:
   - `MODEL_ID`, `API_BASE`, `TIMEOUT_MS`, `MAX_OUTPUT_TOKENS`
 - Responses are JSON‑only with a strict schema; thinking budget is set to 0
@@ -82,7 +71,7 @@ export const appConfig: ApplicationConfig = {
 
 - Invalid or missing API key
   - Symptom: Inline notice appears prompting to update API key
-  - Fix: Open Settings (⚙️), enter a valid key, or set `GEMINI_API_KEY` in environment
+  - Fix: Open Settings (⚙️), enter a valid key
 - Rate limited (429)
   - Symptom: Suggestions pause after many rapid requests
   - Fix: Wait briefly; reduce typing bursts; keep debounce at 500 ms

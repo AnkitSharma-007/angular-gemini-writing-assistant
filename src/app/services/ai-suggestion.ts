@@ -14,7 +14,6 @@ import {
   TokenUsage,
   JSONSchema,
 } from '../models/helper';
-import { environment } from '../../environments/environment';
 import {
   API_BASE,
   MAX_OUTPUT_TOKENS,
@@ -55,7 +54,7 @@ export class AISuggestionService {
     return `${this.apiBase}/${path}`;
   }
 
-  private readonly defaultApiKey = environment.GEMINI_API_KEY || '';
+  private readonly defaultApiKey = '';
   private apiKey = this.defaultApiKey;
 
   private readonly tokenUsage = signal<TokenUsage>({
@@ -162,8 +161,6 @@ Guidelines:
   }
 
   private handleApiError(error: unknown): Observable<AISuggestion[]> {
-    if (!environment.production) console.error('Gemini API Error:', error);
-
     let errorMessage =
       'AI suggestions temporarily unavailable. Please try again.';
     let suggestionId: string = SUGGESTION_IDS.API_ERROR;
