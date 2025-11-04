@@ -13,7 +13,7 @@ import { catchError, of, finalize, Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AISuggestion, UserSettings } from '../../models/helper';
 import { SUGGESTION_IDS } from '../../shared/constants';
-import { SettingsComponent } from '../settings/settings.component';
+import { SettingsComponent } from '../settings/settings';
 import { SuggestionsPanelComponent } from '../suggestions-panel/suggestions-panel';
 
 @Component({
@@ -102,11 +102,10 @@ export class EditorComponent {
 
   private setupAiStatusNoticeEffect() {
     effect(() => {
-      const status = this.aiSuggestionService.getAIStatus;
-      const s = status();
-      if (s.kind === 'invalidApiKey' || s.kind === 'noApiKey') {
+      const status = this.aiSuggestionService.getAIStatus();
+      if (status.kind === 'invalidApiKey' || status.kind === 'noApiKey') {
         this.apiKeyNoticeMessage.set(
-          s.message || 'Your API key seems invalid. Update it in Settings.'
+          status.message || 'Your API key seems invalid. Update it in Settings.'
         );
         this.showApiKeyNotice.set(true);
       } else {

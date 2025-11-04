@@ -6,8 +6,8 @@ import { AISuggestionService } from '../../services/ai-suggestion';
 @Component({
   selector: 'app-settings',
   imports: [FormsModule],
-  templateUrl: './settings.component.html',
-  styleUrl: './settings.component.scss',
+  templateUrl: './settings.html',
+  styleUrls: ['./settings.scss'],
 })
 export class SettingsComponent implements OnInit {
   private readonly aiSuggestionService = inject(AISuggestionService);

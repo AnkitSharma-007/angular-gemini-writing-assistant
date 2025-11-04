@@ -130,11 +130,16 @@ Guidelines:
 
   private parseSuggestionsFromGemini(response: GeminiResponse): AISuggestion[] {
     if (response.usageMetadata) {
-      this.updateTokenUsage(
-        response.usageMetadata.promptTokenCount ?? 0,
-        response.usageMetadata.candidatesTokenCount ?? 0,
-        response.usageMetadata.totalTokenCount ?? 0
-      );
+      this.tokenUsage.update((usage) => ({
+        inputTokens:
+          usage.inputTokens + (response.usageMetadata?.promptTokenCount ?? 0),
+        outputTokens:
+          usage.outputTokens +
+          (response.usageMetadata?.candidatesTokenCount ?? 0),
+        totalTokens:
+          usage.totalTokens + (response.usageMetadata?.totalTokenCount ?? 0),
+        requestCount: usage.requestCount + 1,
+      }));
     }
 
     if (!response.candidates?.length) return [];
@@ -187,19 +192,6 @@ Guidelines:
     }
 
     return of([{ id: suggestionId, text: errorMessage }]);
-  }
-
-  private updateTokenUsage(
-    inputTokens: number,
-    outputTokens: number,
-    totalTokens: number
-  ) {
-    this.tokenUsage.update((usage) => ({
-      inputTokens: usage.inputTokens + inputTokens,
-      outputTokens: usage.outputTokens + outputTokens,
-      totalTokens: usage.totalTokens + totalTokens,
-      requestCount: usage.requestCount + 1,
-    }));
   }
 
   resetTokenUsage() {
