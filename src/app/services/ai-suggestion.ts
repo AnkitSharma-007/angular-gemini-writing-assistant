@@ -113,19 +113,19 @@ export class AISuggestionService {
   private buildGrammarPrompt(text: string): string {
     return `You are an expert grammar checker. Analyze the following text and provide ONLY grammar suggestions for grammatical errors, spelling mistakes, and punctuation issues.
 
-Text to analyze:
----
-${text}
----
+      Text to analyze:
+      ---
+      ${text}
+      ---
 
-Return ONLY valid JSON (no code fences, no prose, no markdown).
+      Return ONLY valid JSON (no code fences, no prose, no markdown).
 
-Guidelines:
-- Focus ONLY on grammar, spelling, and punctuation errors
-- Do NOT provide clarity, style, or completion suggestions
-- Provide 1-5 grammar corrections maximum
-- If there are no grammar errors, return an empty suggestions array
-- Include the exact original text that needs to be corrected in "originalText"`;
+      Guidelines:
+      - Focus ONLY on grammar, spelling, and punctuation errors
+      - Do NOT provide clarity, style, or completion suggestions
+      - Provide 1-5 grammar corrections maximum
+      - If there are no grammar errors, return an empty suggestions array
+      - Include the exact original text that needs to be corrected in "originalText"`;
   }
 
   private parseSuggestionsFromGemini(response: GeminiResponse): AISuggestion[] {
@@ -209,10 +209,13 @@ Guidelines:
 
   private static defaultGenerationConfig() {
     return {
-      temperature: 0.3,
-      topK: 40,
-      topP: 0.95,
-      thinkingConfig: { thinkingBudget: 0 },
+      thinkingConfig: {
+        // for Gemini 3
+        thinkingLevel: 'LOW',
+
+        // for Gemini 2.5
+        //thinkingBudget: 0,
+      },
     } as const;
   }
 

@@ -9,8 +9,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { AISuggestionService } from '../../services/ai-suggestion';
 import { SettingsService } from '../../services/settings';
-import { catchError, of, finalize, Subscription } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, of, finalize, Subscription, Subject } from 'rxjs';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { AISuggestion, UserSettings } from '../../models/helper';
 import { SUGGESTION_IDS } from '../../shared/constants';
 import { SettingsComponent } from '../settings/settings';
@@ -27,32 +27,37 @@ export class EditorComponent {
   private readonly settingsService = inject(SettingsService);
   private readonly destroyRef = inject(DestroyRef);
 
-  currentText = signal('');
-  isProcessing = signal(false);
-  suggestions = signal<AISuggestion[]>([]);
-  showSettings = signal(false);
+  private readonly DEBOUNCE_TIME_MS = 500 as const;
+  private readonly MAX_SUGGESTIONS_DISPLAY = 5 as const;
 
-  settings = signal<UserSettings>({
+  readonly currentText = signal<string>('');
+  readonly isProcessing = signal<boolean>(false);
+  readonly suggestions = signal<AISuggestion[]>([]);
+  readonly showSettings = signal<boolean>(false);
+  readonly showApiKeyNotice = signal<boolean>(false);
+  readonly apiKeyNoticeMessage = signal<string>('');
+
+  readonly settings = signal<UserSettings>({
     ...this.settingsService.loadUserSettings(),
   });
 
-  showApiKeyNotice = signal(false);
-  apiKeyNoticeMessage = signal('');
+  readonly tokenUsage = this.aiSuggestionService.getTokenUsage;
 
-  tokenUsage = this.aiSuggestionService.getTokenUsage;
-
-  wordCount = computed(() => {
+  readonly wordCount = computed(() => {
     const text = this.currentText().trim();
     if (!text) return 0;
     return text.split(/\s+/).filter((word) => word.length > 0).length;
   });
 
-  characterCount = computed(() => this.currentText().length);
+  readonly characterCount = computed(() => this.currentText().length);
 
-  filteredSuggestions = computed(() => this.suggestions().slice(0, 5));
+  readonly filteredSuggestions = computed(() =>
+    this.suggestions().slice(0, this.MAX_SUGGESTIONS_DISPLAY)
+  );
 
-  private debounceHandle: any;
+  private debounceHandle: ReturnType<typeof setTimeout> | undefined;
   private lastQuery = '';
+  private currentSubscription: Subscription | undefined;
 
   constructor() {
     this.initializeApiKey();
@@ -67,19 +72,15 @@ export class EditorComponent {
     }
   }
 
-  private setupSuggestionsEffect() {
+  private setupSuggestionsEffect(): void {
     effect((onCleanup) => {
       const text = this.currentText().trim();
       const auto = this.settings().autoSuggestions;
 
-      if (this.debounceHandle) {
-        clearTimeout(this.debounceHandle);
-        this.debounceHandle = undefined;
-      }
+      this.cancelPendingRequests();
 
       if (!text || !auto) {
-        this.suggestions.set([]);
-        this.isProcessing.set(false);
+        this.resetSuggestions();
         return;
       }
 
@@ -89,18 +90,30 @@ export class EditorComponent {
 
       this.debounceHandle = setTimeout(() => {
         this.requestSuggestions(text);
-      }, 500);
+      }, this.DEBOUNCE_TIME_MS);
 
-      onCleanup(() => {
-        if (this.debounceHandle) {
-          clearTimeout(this.debounceHandle);
-          this.debounceHandle = undefined;
-        }
-      });
+      onCleanup(() => this.cancelPendingRequests());
     });
   }
 
-  private setupAiStatusNoticeEffect() {
+  private cancelPendingRequests(): void {
+    if (this.debounceHandle) {
+      clearTimeout(this.debounceHandle);
+      this.debounceHandle = undefined;
+    }
+
+    if (this.currentSubscription) {
+      this.currentSubscription.unsubscribe();
+      this.currentSubscription = undefined;
+    }
+  }
+
+  private resetSuggestions(): void {
+    this.suggestions.set([]);
+    this.isProcessing.set(false);
+  }
+
+  private setupAiStatusNoticeEffect(): void {
     effect(() => {
       const status = this.aiSuggestionService.getAIStatus();
       if (status.kind === 'invalidApiKey' || status.kind === 'noApiKey') {
@@ -115,84 +128,90 @@ export class EditorComponent {
     });
   }
 
-  private requestSuggestions(text: string): Subscription {
+  private requestSuggestions(text: string): void {
     this.isProcessing.set(true);
-    return this.aiSuggestionService
+    this.currentSubscription = this.aiSuggestionService
       .getSuggestions(text)
       .pipe(
-        catchError(() =>
-          of([
+        catchError((error) => {
+          console.error('Failed to fetch suggestions:', error);
+          return of([
             {
               id: SUGGESTION_IDS.API_ERROR,
               text: 'Failed to get suggestions.',
             },
-          ])
-        ),
+          ]);
+        }),
         finalize(() => this.isProcessing.set(false)),
         takeUntilDestroyed(this.destroyRef)
       )
       .subscribe((suggestions) => {
-        const filtered = suggestions.filter(
-          (s) =>
-            s.id !== SUGGESTION_IDS.NO_API_KEY &&
-            s.id !== SUGGESTION_IDS.INVALID_API_KEY
-        );
-        this.suggestions.set(filtered);
-        this.lastQuery = text;
+        this.processSuggestions(suggestions, text);
       });
   }
 
-  applySuggestion(suggestion: AISuggestion) {
-    const currentText = this.currentText();
-    let newText = currentText;
+  private processSuggestions(suggestions: AISuggestion[], query: string): void {
+    const filteredSuggestions = this.filterSystemSuggestions(suggestions);
+    this.suggestions.set(filteredSuggestions);
+    this.lastQuery = query;
+  }
 
-    if (suggestion.originalText) {
-      newText = currentText.replace(suggestion.originalText, suggestion.text);
-    } else {
-      newText = suggestion.text;
-    }
+  private filterSystemSuggestions(suggestions: AISuggestion[]): AISuggestion[] {
+    return suggestions.filter(
+      (suggestion) =>
+        suggestion.id !== SUGGESTION_IDS.NO_API_KEY &&
+        suggestion.id !== SUGGESTION_IDS.INVALID_API_KEY
+    );
+  }
+
+  applySuggestion(suggestion: AISuggestion): void {
+    const newText = suggestion.originalText
+      ? this.currentText().replace(suggestion.originalText, suggestion.text)
+      : suggestion.text;
 
     this.currentText.set(newText);
     this.dismissSuggestion(suggestion);
   }
 
-  dismissSuggestion(suggestion: AISuggestion) {
+  dismissSuggestion(suggestion: AISuggestion): void {
     this.suggestions.update((suggestions) =>
       suggestions.filter((s) => s.id !== suggestion.id)
     );
   }
 
-  onSettingsChange(updates: Partial<UserSettings>) {
+  onSettingsChange(updates: Partial<UserSettings>): void {
     this.settings.update((current) => ({ ...current, ...updates }));
-
     this.settingsService.updateUserSettings(updates);
 
     if (updates.geminiApiKey !== undefined) {
-      this.aiSuggestionService.setApiKey(updates.geminiApiKey || '');
-      this.showApiKeyNotice.set(false);
-      this.apiKeyNoticeMessage.set('');
+      this.updateApiKey(updates.geminiApiKey);
     }
   }
 
-  toggleSettings() {
-    this.showSettings.set(!this.showSettings());
+  private updateApiKey(apiKey: string): void {
+    this.aiSuggestionService.setApiKey(apiKey);
+    this.showApiKeyNotice.set(false);
+    this.apiKeyNoticeMessage.set('');
   }
 
-  closeSettings() {
+  toggleSettings(): void {
+    this.showSettings.update((current) => !current);
+  }
+
+  closeSettings(): void {
     this.showSettings.set(false);
   }
 
-  toggleAutoSuggestions() {
-    const current = this.settings().autoSuggestions;
-    this.onSettingsChange({ autoSuggestions: !current });
+  toggleAutoSuggestions(): void {
+    const isEnabled = this.settings().autoSuggestions;
+    this.onSettingsChange({ autoSuggestions: !isEnabled });
 
     if (!this.settings().autoSuggestions) {
-      this.suggestions.set([]);
-      this.isProcessing.set(false);
+      this.resetSuggestions();
     }
   }
 
-  dismissApiKeyNotice() {
+  dismissApiKeyNotice(): void {
     this.showApiKeyNotice.set(false);
   }
 }
