@@ -1,6 +1,6 @@
 # AI‑Powered Writer (Grammar Assistant)
 
-A lightweight Angular app that uses Google Gemini (2.5 Flash) to provide real‑time grammar corrections as you type.
+A lightweight Angular app that uses Google Gemini to provide real‑time grammar corrections as you type.
 
 ## Features
 
