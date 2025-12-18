@@ -9,8 +9,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { AISuggestionService } from '../../services/ai-suggestion';
 import { SettingsService } from '../../services/settings';
-import { catchError, of, finalize, Subscription, Subject } from 'rxjs';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { catchError, of, finalize, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AISuggestion, UserSettings } from '../../models/helper';
 import { SUGGESTION_IDS } from '../../shared/constants';
 import { SettingsComponent } from '../settings/settings';

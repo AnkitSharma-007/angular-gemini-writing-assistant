@@ -19,8 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideHttpClient(withInterceptorsFromDi()),
-    //{ provide: MODEL_ID, useValue: 'gemini-2.5-flash' },
-    { provide: MODEL_ID, useValue: 'gemini-3-pro-preview' },
+    { provide: MODEL_ID, useValue: 'gemini-3-flash-preview' },
+    // { provide: MODEL_ID, useValue: 'gemini-3-pro-preview' },
     {
       provide: API_BASE,
       useValue: 'https://generativelanguage.googleapis.com/v1beta',

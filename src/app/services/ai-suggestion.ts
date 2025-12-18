@@ -210,11 +210,7 @@ export class AISuggestionService {
   private static defaultGenerationConfig() {
     return {
       thinkingConfig: {
-        // for Gemini 3
         thinkingLevel: 'LOW',
-
-        // for Gemini 2.5
-        //thinkingBudget: 0,
       },
     } as const;
   }

@@ -26,10 +26,6 @@ export interface GenerationConfig {
   topP?: number;
   maxOutputTokens?: number;
   thinkingConfig?: {
-    // for Gemini 2.5
-    //thinkingBudget?: number;
-
-    // for Gemini 3
     thinkingLevel?: string;
   };
   // Gemini options to enforce JSON-only responses and schema hints
